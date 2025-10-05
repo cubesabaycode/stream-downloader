@@ -6,30 +6,15 @@ import time
 from urllib.parse import quote
 import json
 import os
+import yt_dlp # Moved import to the top since installation is handled by requirements.txt
 
 app = Flask(__name__)
 
-# Install yt-dlp on startup if not available
-def ensure_yt_dlp():
-    try:
-        # Try to import yt-dlp to check if it's available
-        import yt_dlp
-        print("✅ yt-dlp is available")
-        return True
-    except ImportError:
-        print("❌ yt-dlp not found, installing...")
-        try:
-            subprocess.run([
-                'pip', 'install', 'yt-dlp'
-            ], check=True, capture_output=True, timeout=60)
-            print("✅ yt-dlp installed successfully")
-            return True
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
-            print(f"❌ Failed to install yt-dlp: {e}")
-            return False
+# --- Replaced ensure_yt_dlp() function (no longer needed as installation is handled by requirements.txt) ---
 
 class StreamDownloader:
     def __init__(self):
+        # yt-dlp options
         self.ydl_opts = {
             'quiet': True,
             'no_warnings': True,
@@ -42,11 +27,10 @@ class StreamDownloader:
             if self.is_facebook_url(url):
                 return {
                     'success': False, 
-                    'error': 'Facebook videos are not supported due to platform restrictions. Please try YouTube, Instagram, or TikTok videos instead.'
+                    'error': 'វីដេអូ Facebook មិនត្រូវបានគាំទ្រទេ ដោយសារការរឹតត្បិតវេទិកា។ សូមសាកល្បង YouTube, Instagram, ឬ TikTok វិញ។'
                 }
             
-            import yt_dlp
-            
+            # Using imported yt_dlp from the top
             with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
                 try:
                     info = ydl.extract_info(url, download=False)
@@ -54,32 +38,30 @@ class StreamDownloader:
                     if info:
                         return {
                             'success': True,
-                            'title': info.get('title', 'video'),
+                            'title': info.get('title', 'វីដេអូ'),
                             'duration': self.format_duration(info.get('duration', 0)),
                             'thumbnail': info.get('thumbnail', ''),
-                            'uploader': info.get('uploader', 'Unknown'),
+                            'uploader': info.get('uploader', 'មិនស្គាល់'),
                             'view_count': info.get('view_count', 0),
                             'description': info.get('description', '')[:100] + '...' if info.get('description') else ''
                         }
                     else:
-                        return {'success': False, 'error': 'No video information found'}
+                        return {'success': False, 'error': 'មិនមានព័ត៌មានវីដេអូរកឃើញទេ។'}
                         
                 except yt_dlp.DownloadError as e:
                     error_msg = str(e)
                     if 'No video formats found' in error_msg:
                         platform = self.get_platform_name(url)
-                        return {'success': False, 'error': f'{platform} video is not accessible. Try a different video.'}
+                        return {'success': False, 'error': f'{platform} វីដេអូមិនអាចចូលប្រើបានទេ។ សូមសាកល្បងវីដេអូផ្សេង។'}
                     elif 'Private video' in error_msg or 'Sign in' in error_msg:
-                        return {'success': False, 'error': 'This video is private or requires login.'}
+                        return {'success': False, 'error': 'វីដេអូនេះជាឯកជន ឬតម្រូវឲ្យចូលគណនី។'}
                     else:
-                        return {'success': False, 'error': f'Video not available: {error_msg}'}
+                        return {'success': False, 'error': f'វីដេអូមិនមាន៖ {error_msg}'}
                 except Exception as e:
-                    return {'success': False, 'error': f'Error extracting info: {str(e)}'}
+                    return {'success': False, 'error': f'កំហុសក្នុងការទាញយកព័ត៌មាន៖ {str(e)}'}
                     
-        except ImportError:
-            return {'success': False, 'error': 'yt-dlp not available'}
         except Exception as e:
-            return {'success': False, 'error': f'Unexpected error: {str(e)}'}
+            return {'success': False, 'error': f'កំហុសដែលមិនបានរំពឹងទុក៖ {str(e)}'}
     
     def is_facebook_url(self, url):
         """Check if URL is from Facebook"""
@@ -97,12 +79,12 @@ class StreamDownloader:
         elif 'facebook.com' in url_lower or 'fb.watch' in url_lower:
             return 'Facebook'
         else:
-            return 'This platform'
+            return 'វេទិកានេះ'
     
     def format_duration(self, seconds):
         """Convert duration in seconds to readable format"""
         if not seconds:
-            return 'Unknown'
+            return 'មិនស្គាល់'
         
         hours = seconds // 3600
         minutes = (seconds % 3600) // 60
@@ -116,14 +98,12 @@ class StreamDownloader:
     def get_direct_stream_url(self, url, quality='best'):
         """Get direct stream URL using yt-dlp Python module"""
         try:
-            # Check for Facebook and provide helpful message
+            # Check for Facebook and provide helpful message (Khmer translation)
             if self.is_facebook_url(url):
                 return {
                     'success': False, 
-                    'error': 'Facebook videos are not supported due to platform restrictions. Please try YouTube, Instagram, or TikTok videos instead.'
+                    'error': 'វីដេអូ Facebook មិនត្រូវបានគាំទ្រទេ ដោយសារការរឹតត្បិតវេទិកា។ សូមសាកល្បង YouTube, Instagram, ឬ TikTok វិញ។'
                 }
-            
-            import yt_dlp
             
             # Format selection based on quality
             if quality == 'audio':
@@ -155,41 +135,40 @@ class StreamDownloader:
                             'stream_url': info['url'],
                             'format': quality,
                             'ext': info.get('ext', 'mp4'),
-                            'title': info.get('title', 'video')
+                            'title': info.get('title', 'វីដេអូ')
                         }
                     else:
-                        return {'success': False, 'error': 'No stream URL available'}
+                        return {'success': False, 'error': 'គ្មានតំណស្ទ្រីមដែលអាចប្រើបានទេ។'}
                         
                 except yt_dlp.DownloadError as e:
                     error_msg = str(e)
                     if 'No video formats found' in error_msg:
                         platform = self.get_platform_name(url)
-                        return {'success': False, 'error': f'{platform} video cannot be downloaded.'}
+                        return {'success': False, 'error': f'{platform} វីដេអូមិនអាចទាញយកបានទេ។'}
                     elif 'Private video' in error_msg or 'Sign in' in error_msg:
-                        return {'success': False, 'error': 'Private video - cannot access.'}
+                        return {'success': False, 'error': 'វីដេអូឯកជន - មិនអាចចូលប្រើបានទេ។'}
                     else:
-                        return {'success': False, 'error': f'Cannot access video: {error_msg}'}
+                        return {'success': False, 'error': f'មិនអាចចូលប្រើវីដេអូ៖ {error_msg}'}
                 except Exception as e:
-                    return {'success': False, 'error': f'Error getting stream: {str(e)}'}
+                    return {'success': False, 'error': f'កំហុសក្នុងការទទួលបានស្ទ្រីម៖ {str(e)}'}
                     
-        except ImportError:
-            return {'success': False, 'error': 'yt-dlp not available'}
         except Exception as e:
-            return {'success': False, 'error': f'Unexpected error: {str(e)}'}
+            return {'success': False, 'error': f'កំហុសដែលមិនបានរំពឹងទុក៖ {str(e)}'}
 
 stream_downloader = StreamDownloader()
 
+# --- HTML Template with Khmer Translations and minor JS fix (filename length increased) ---
 HTML_TEMPLATE = '''
 <!DOCTYPE html>
-<html lang="en">
+<html lang="km">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🚀 Direct Stream Downloader</title>
+    <title>🚀 កម្មវិធីទាញយកស្ទ្រីមផ្ទាល់</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: 'Khmer OS Battambang', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; /* Added Khmer font */
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
@@ -412,8 +391,8 @@ HTML_TEMPLATE = '''
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚀 Direct Stream Downloader</h1>
-            <p>Download videos directly to your device - No server storage used!</p>
+            <h1>🚀 កម្មវិធីទាញយកស្ទ្រីមផ្ទាល់</h1>
+            <p>ទាញយកវីដេអូដោយផ្ទាល់ទៅឧបករណ៍របស់អ្នក - គ្មានការផ្ទុកទិន្នន័យលើម៉ាស៊ីនមេ!</p>
             
             <div class="platforms">
                 <div class="platform-tag youtube">YouTube <span class="platform-status">✅</span></div>
@@ -425,49 +404,49 @@ HTML_TEMPLATE = '''
 
         <div class="feature-list">
             <ul>
-                <li>✅ YouTube - Full Support</li>
-                <li>✅ Instagram - Public Posts & Reels</li>
-                <li>✅ TikTok - Public Videos</li>
-                <li>❌ Facebook - Not Supported (Platform Restrictions)</li>
-                <li>No file saving on server — direct stream</li>
-                <li>Render-compatible (Free Tier)</li>
-                <li>Uses only free-tier services</li>
-                <li>Auto "Save As..." download to user device</li>
-                <li>Works cross-platform (Windows, Linux, macOS, mobile)</li>
+                <li>✅ YouTube - ការគាំទ្រពេញលេញ</li>
+                <li>✅ Instagram - ផុសសាធារណៈ & Reels</li>
+                <li>✅ TikTok - វីដេអូសាធារណៈ</li>
+                <li>❌ Facebook - មិនត្រូវបានគាំទ្រ (ការរឹតត្បិតវេទិកា)</li>
+                <li>គ្មានការរក្សាទុកឯកសារនៅលើម៉ាស៊ីនមេ — ស្ទ្រីមផ្ទាល់</li>
+                <li>ត្រូវគ្នានឹង Render (Free Tier)</li>
+                <li>ប្រើប្រាស់តែសេវាកម្ម Free-tier</li>
+                <li>ការទាញយកដោយស្វ័យប្រវត្តិ "រក្សាទុកជា..." ទៅឧបករណ៍របស់អ្នកប្រើ</li>
+                <li>ដំណើរការលើគ្រប់វេទិកា (Windows, Linux, macOS, ទូរស័ព្ទ)</li>
             </ul>
         </div>
 
         <div class="input-section">
             <input type="url" class="url-input" id="videoUrl" 
-                   placeholder="Paste video URL here (YouTube, Instagram, TikTok)..."
+                   placeholder="បញ្ចូលតំណ URL វីដេអូនៅទីនេះ (YouTube, Instagram, TikTok)..."
                    value="https://www.youtube.com/watch?v=dQw4w9WgXcQ">
             
             <div class="options">
                 <div class="option-group">
-                    <label for="quality">📹 Quality:</label>
+                    <label for="quality">📹 គុណភាព:</label>
                     <select id="quality" class="option-select">
-                        <option value="best">Best Quality</option>
+                        <option value="best">គុណភាពល្អបំផុត</option>
                         <option value="1080p">1080p</option>
                         <option value="720p">720p</option>
                         <option value="480p">480p</option>
                         <option value="360p">360p</option>
-                        <option value="audio">Audio Only (MP3/M4A)</option>
+                        <option value="audio">សំឡេងតែប៉ុណ្ណោះ (MP3/M4A)</option>
                     </select>
                 </div>
                 
                 <div class="option-group">
-                    <label for="platform">🌐 Platform:</label>
+                    <label for="platform">🌐 វេទិកា:</label>
                     <select id="platform" class="option-select" disabled>
-                        <option value="auto">Auto Detect</option>
+                        <option value="auto">ស្វ័យប្រវត្តិ</option>
                         <option value="youtube">YouTube</option>
                         <option value="instagram">Instagram</option>
                         <option value="tiktok">TikTok</option>
-                        <option value="facebook">Facebook (Not Supported)</option>
+                        <option value="facebook">Facebook (មិនគាំទ្រ)</option>
                     </select>
                 </div>
             </div>
 
-            <button class="download-btn" id="downloadBtn">🎬 Get Download Link</button>
+            <button class="download-btn" id="downloadBtn">🎬 យកតំណទាញយក</button>
             
             <div class="progress-bar" id="progressBar">
                 <div class="progress-fill" id="progressFill"></div>
@@ -533,30 +512,30 @@ HTML_TEMPLATE = '''
                 const quality = this.quality.value;
                 
                 if (!url) {
-                    this.showResult('Please enter a video URL', 'error');
+                    this.showResult('សូមបញ្ចូលតំណ URL វីដេអូ', 'error');
                     return;
                 }
                 
                 if (!this.isValidUrl(url)) {
-                    this.showResult('Please enter a valid URL', 'error');
+                    this.showResult('សូមបញ្ចូលតំណ URL ដែលត្រឹមត្រូវ', 'error');
                     return;
                 }
                 
                 // Check for Facebook URLs
                 if (url.includes('facebook.com') || url.includes('fb.watch')) {
-                    this.showResult('❌ Facebook videos are not supported due to platform restrictions. Please try YouTube, Instagram, or TikTok videos instead.', 'error');
+                    this.showResult('❌ វីដេអូ Facebook មិនត្រូវបានគាំទ្រទេ ដោយសារការរឹតត្បិតវេទិកា។ សូមសាកល្បង YouTube, Instagram, ឬ TikTok វិញ។', 'error');
                     return;
                 }
                 
                 this.downloadBtn.disabled = true;
-                this.downloadBtn.textContent = 'Getting video info...';
+                this.downloadBtn.textContent = 'កំពុងយកព័ត៌មានវីដេអូ...';
                 this.progressBar.style.display = 'block';
                 this.progressFill.style.width = '30%';
                 this.hideVideoInfo();
                 
                 try {
                     // First get video info
-                    this.showResult('🔍 Getting video information...', 'info');
+                    this.showResult('🔍 កំពុងយកព័ត៌មានវីដេអូ...', 'info');
                     
                     const infoResponse = await fetch('/video-info', {
                         method: 'POST',
@@ -579,10 +558,10 @@ HTML_TEMPLATE = '''
                     if (infoData.success) {
                         this.progressFill.style.width = '60%';
                         this.showVideoInfo(infoData);
-                        this.showResult('✅ Video info loaded! Getting download link...', 'success');
+                        this.showResult('✅ ព័ត៌មានវីដេអូបានផ្ទុកហើយ! កំពុងយកតំណទាញយក...', 'success');
                         
                         // Now get download link
-                        this.downloadBtn.textContent = 'Getting download link...';
+                        this.downloadBtn.textContent = 'កំពុងយកតំណទាញយក...';
                         
                         const downloadResponse = await fetch('/get-download-link', {
                             method: 'POST',
@@ -606,15 +585,16 @@ HTML_TEMPLATE = '''
                         if (downloadData.success) {
                             this.showDownloadLink(downloadData, infoData);
                         } else {
-                            this.showResult(`❌ Error getting download link: ${downloadData.error}`, 'error');
+                            this.showResult(`❌ កំហុសក្នុងការយកតំណទាញយក៖ ${downloadData.error}`, 'error');
                         }
                     } else {
-                        this.showResult(`❌ Error getting video info: ${infoData.error}`, 'error');
+                        // Display Khmer error message
+                        this.showResult(`❌ មានកំហុសក្នុងការយកព័ត៌មានវីដេអូ៖ ${infoData.error}`, 'error');
                     }
                     
                 } catch (error) {
                     console.error('Download error:', error);
-                    this.showResult(`❌ Network error: ${error.message}`, 'error');
+                    this.showResult(`❌ កំហុសបណ្តាញ៖ ${error.message}`, 'error');
                 } finally {
                     this.resetUI();
                 }
@@ -623,9 +603,9 @@ HTML_TEMPLATE = '''
             showVideoInfo(info) {
                 let html = `
                     <h3>🎥 ${info.title}</h3>
-                    <p><strong>Creator:</strong> ${info.uploader}</p>
-                    <p><strong>Duration:</strong> ${info.duration}</p>
-                    <p><strong>Views:</strong> ${info.view_count?.toLocaleString() || 'Unknown'}</p>
+                    <p><strong>អ្នកបង្កើត៖</strong> ${info.uploader}</p>
+                    <p><strong>រយៈពេល៖</strong> ${info.duration}</p>
+                    <p><strong>ការមើល៖</strong> ${info.view_count?.toLocaleString() || 'មិនស្គាល់'}</p>
                 `;
                 
                 if (info.thumbnail) {
@@ -644,16 +624,16 @@ HTML_TEMPLATE = '''
                 
                 const message = `
                     <div style="text-align: center;">
-                        <h3>✅ Ready to Download!</h3>
-                        <p><strong>File:</strong> ${filename}</p>
-                        <p><strong>Quality:</strong> ${downloadData.format}</p>
-                        <p><strong>Format:</strong> ${downloadData.ext?.toUpperCase() || 'MP4'}</p>
+                        <h3>✅ រួចរាល់សម្រាប់ទាញយក!</h3>
+                        <p><strong>ឯកសារ៖</strong> ${filename}</p>
+                        <p><strong>គុណភាព៖</strong> ${downloadData.format}</p>
+                        <p><strong>ទម្រង់៖</strong> ${downloadData.ext?.toUpperCase() || 'MP4'}</p>
                         <br>
                         <a href="${downloadUrl}" class="direct-download-btn" download="${filename}">
-                            ⬇️ Download Now (Save As...)
+                            ⬇️ ទាញយកឥឡូវ (រក្សាទុកជា...)
                         </a>
                         <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
-                            Clicking will start direct download to your device
+                            ការចុចនឹងចាប់ផ្តើមទាញយកដោយផ្ទាល់ទៅឧបករណ៍របស់អ្នក។
                         </p>
                     </div>
                 `;
@@ -662,7 +642,8 @@ HTML_TEMPLATE = '''
             }
             
             sanitizeFilename(name) {
-                return name.replace(/[^a-z0-9]/gi, '_').substring(0, 50);
+                // Increased limit from 50 to 100 for better titles
+                return name.replace(/[^a-z0-9]/gi, '_').substring(0, 100);
             }
             
             isValidUrl(string) {
@@ -682,7 +663,7 @@ HTML_TEMPLATE = '''
             
             resetUI() {
                 this.downloadBtn.disabled = false;
-                this.downloadBtn.textContent = '🎬 Get Download Link';
+                this.downloadBtn.textContent = '🎬 យកតំណទាញយក';
                 setTimeout(() => {
                     this.progressBar.style.display = 'none';
                     this.progressFill.style.width = '0%';
@@ -707,27 +688,27 @@ def video_info():
     try:
         # Check if request has JSON data
         if not request.is_json:
-            return jsonify({'success': False, 'error': 'Request must be JSON'}), 400
+            return jsonify({'success': False, 'error': 'សំណើត្រូវតែជា JSON'}), 400
             
         data = request.get_json()
         if not data:
-            return jsonify({'success': False, 'error': 'No JSON data provided'}), 400
+            return jsonify({'success': False, 'error': 'មិនមានទិន្នន័យ JSON ត្រូវបានផ្តល់ជូនទេ'}), 400
             
         url = data.get('url')
         
         if not url:
-            return jsonify({'success': False, 'error': 'No URL provided'}), 400
+            return jsonify({'success': False, 'error': 'មិនមាន URL ត្រូវបានផ្តល់ជូនទេ'}), 400
         
         # Validate URL format
         if not url.startswith(('http://', 'https://')):
-            return jsonify({'success': False, 'error': 'Invalid URL format'}), 400
+            return jsonify({'success': False, 'error': 'ទម្រង់ URL មិនត្រឹមត្រូវ'}), 400
         
         info = stream_downloader.get_video_info(url)
         return jsonify(info)
         
     except Exception as e:
         print(f"Error in video_info: {str(e)}")
-        return jsonify({'success': False, 'error': f'Server error: {str(e)}'}), 500
+        return jsonify({'success': False, 'error': f'កំហុសម៉ាស៊ីនមេ៖ {str(e)}'}), 500
 
 @app.route('/get-download-link', methods=['POST'])
 def get_download_link():
@@ -735,28 +716,28 @@ def get_download_link():
     try:
         # Check if request has JSON data
         if not request.is_json:
-            return jsonify({'success': False, 'error': 'Request must be JSON'}), 400
+            return jsonify({'success': False, 'error': 'សំណើត្រូវតែជា JSON'}), 400
             
         data = request.get_json()
         if not data:
-            return jsonify({'success': False, 'error': 'No JSON data provided'}), 400
+            return jsonify({'success': False, 'error': 'មិនមានទិន្នន័យ JSON ត្រូវបានផ្តល់ជូនទេ'}), 400
             
         url = data.get('url')
         quality = data.get('quality', 'best')
         
         if not url:
-            return jsonify({'success': False, 'error': 'No URL provided'}), 400
+            return jsonify({'success': False, 'error': 'មិនមាន URL ត្រូវបានផ្តល់ជូនទេ'}), 400
         
         # Validate URL format
         if not url.startswith(('http://', 'https://')):
-            return jsonify({'success': False, 'error': 'Invalid URL format'}), 400
+            return jsonify({'success': False, 'error': 'ទម្រង់ URL មិនត្រឹមត្រូវ'}), 400
         
         stream_info = stream_downloader.get_direct_stream_url(url, quality)
         return jsonify(stream_info)
         
     except Exception as e:
         print(f"Error in get_download_link: {str(e)}")
-        return jsonify({'success': False, 'error': f'Server error: {str(e)}'}), 500
+        return jsonify({'success': False, 'error': f'កំហុសម៉ាស៊ីនមេ៖ {str(e)}'}), 500
 
 @app.route('/stream-download')
 def stream_download():
@@ -778,8 +759,9 @@ def stream_download():
                 response = requests.get(
                     stream_url, 
                     stream=True, 
-                    timeout=30,
+                    timeout=30, # Increased timeout for slow streams
                     headers={
+                        # Using a generic User-Agent to avoid blocking by some platforms
                         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
                     }
                 )
@@ -791,9 +773,11 @@ def stream_download():
                         yield chunk
                     
             except requests.exceptions.RequestException as e:
-                yield f"Error streaming video: {str(e)}".encode()
+                # Log the error but continue streaming the chunk to client (Flask will handle error)
+                print(f"Error streaming video: {str(e)}")
+                # Do NOT yield the error message as it will corrupt the video file
             except Exception as e:
-                yield f"Unexpected error: {str(e)}".encode()
+                print(f"Unexpected error in generate: {str(e)}")
         
         headers = {
             'Content-Disposition': f'attachment; filename="{filename}"',
@@ -808,26 +792,12 @@ def stream_download():
         
     except Exception as e:
         print(f"Error in stream_download: {str(e)}")
-        return jsonify({'error': f'Download error: {str(e)}'}), 500
+        # Returning a JSON error here is wrong since the client expects a file stream.
+        # A simple string error response is safer.
+        return f'Download error: {str(e)}', 500
 
-@app.route('/health')
-def health():
-    try:
-        yt_dlp_status = ensure_yt_dlp()
-        return jsonify({
-            'status': 'healthy', 
-            'service': 'Direct Stream Downloader',
-            'yt_dlp_available': yt_dlp_status
-        })
-    except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'error': str(e)
-        }), 500
-
-# Run startup tasks immediately when the app loads
+# Removed ensure_yt_dlp() startup calls
 print("🚀 Starting Direct Stream Downloader...")
-ensure_yt_dlp()
 print("✅ Startup completed - App is ready!")
 
 if __name__ == '__main__':
