@@ -764,15 +764,10 @@ def health():
             'error': str(e)
         }), 500
 
-# Run startup tasks on first request using modern Flask
-@app.before_request
-def before_first_request():
-    """Run startup tasks before first request (modern approach)"""
-    if not hasattr(app, 'startup_complete'):
-        print("🚀 Starting Direct Stream Downloader...")
-        ensure_yt_dlp()
-        print("✅ Startup completed - App is ready!")
-        app.startup_complete = True
+# Run startup tasks immediately when the app loads
+print("🚀 Starting Direct Stream Downloader...")
+ensure_yt_dlp()
+print("✅ Startup completed - App is ready!")
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
