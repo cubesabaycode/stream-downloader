@@ -21,15 +21,12 @@ def ensure_yt_dlp():
         try:
             subprocess.run([
                 'pip', 'install', 'yt-dlp'
-            ], check=True, capture_output=True)
+            ], check=True, capture_output=True, timeout=60)
             print("✅ yt-dlp installed successfully")
             return True
-        except subprocess.CalledProcessError as e:
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
             print(f"❌ Failed to install yt-dlp: {e}")
             return False
-
-# Check on startup
-ensure_yt_dlp()
 
 class StreamDownloader:
     def __init__(self):
@@ -511,6 +508,11 @@ HTML_TEMPLATE = '''
                         })
                     });
                     
+                    // Check if response is OK
+                    if (!infoResponse.ok) {
+                        throw new Error(`Server error: ${infoResponse.status}`);
+                    }
+                    
                     const infoData = await infoResponse.json();
                     
                     if (infoData.success) {
@@ -532,6 +534,11 @@ HTML_TEMPLATE = '''
                             })
                         });
                         
+                        // Check if response is OK
+                        if (!downloadResponse.ok) {
+                            throw new Error(`Server error: ${downloadResponse.status}`);
+                        }
+                        
                         const downloadData = await downloadResponse.json();
                         this.progressFill.style.width = '100%';
                         
@@ -545,6 +552,7 @@ HTML_TEMPLATE = '''
                     }
                     
                 } catch (error) {
+                    console.error('Download error:', error);
                     this.showResult(`❌ Network error: ${error.message}`, 'error');
                 } finally {
                     this.resetUI();
@@ -636,42 +644,58 @@ def home():
 def video_info():
     """Get video information"""
     try:
+        # Check if request has JSON data
+        if not request.is_json:
+            return jsonify({'success': False, 'error': 'Request must be JSON'}), 400
+            
         data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'No JSON data provided'}), 400
+            
         url = data.get('url')
         
         if not url:
-            return jsonify({'success': False, 'error': 'No URL provided'})
+            return jsonify({'success': False, 'error': 'No URL provided'}), 400
         
         # Validate URL format
         if not url.startswith(('http://', 'https://')):
-            return jsonify({'success': False, 'error': 'Invalid URL format'})
+            return jsonify({'success': False, 'error': 'Invalid URL format'}), 400
         
         info = stream_downloader.get_video_info(url)
         return jsonify(info)
         
     except Exception as e:
-        return jsonify({'success': False, 'error': f'Server error: {str(e)}'})
+        print(f"Error in video_info: {str(e)}")
+        return jsonify({'success': False, 'error': f'Server error: {str(e)}'}), 500
 
 @app.route('/get-download-link', methods=['POST'])
 def get_download_link():
     """Get direct download link"""
     try:
+        # Check if request has JSON data
+        if not request.is_json:
+            return jsonify({'success': False, 'error': 'Request must be JSON'}), 400
+            
         data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'No JSON data provided'}), 400
+            
         url = data.get('url')
         quality = data.get('quality', 'best')
         
         if not url:
-            return jsonify({'success': False, 'error': 'No URL provided'})
+            return jsonify({'success': False, 'error': 'No URL provided'}), 400
         
         # Validate URL format
         if not url.startswith(('http://', 'https://')):
-            return jsonify({'success': False, 'error': 'Invalid URL format'})
+            return jsonify({'success': False, 'error': 'Invalid URL format'}), 400
         
         stream_info = stream_downloader.get_direct_stream_url(url, quality)
         return jsonify(stream_info)
         
     except Exception as e:
-        return jsonify({'success': False, 'error': f'Server error: {str(e)}'})
+        print(f"Error in get_download_link: {str(e)}")
+        return jsonify({'success': False, 'error': f'Server error: {str(e)}'}), 500
 
 @app.route('/stream-download')
 def stream_download():
@@ -722,15 +746,31 @@ def stream_download():
         )
         
     except Exception as e:
+        print(f"Error in stream_download: {str(e)}")
         return jsonify({'error': f'Download error: {str(e)}'}), 500
 
 @app.route('/health')
 def health():
-    return jsonify({
-        'status': 'healthy', 
-        'service': 'Direct Stream Downloader',
-        'yt_dlp_available': ensure_yt_dlp()
-    })
+    try:
+        yt_dlp_status = ensure_yt_dlp()
+        return jsonify({
+            'status': 'healthy', 
+            'service': 'Direct Stream Downloader',
+            'yt_dlp_available': yt_dlp_status
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'error': str(e)
+        }), 500
+
+# Run startup tasks on first request
+@app.before_first_request
+def startup():
+    """Run startup tasks before first request"""
+    print("🚀 Starting Direct Stream Downloader...")
+    ensure_yt_dlp()
+    print("✅ Startup completed - App is ready!")
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
@@ -744,6 +784,3 @@ if __name__ == '__main__':
     print("   ✅ Auto 'Save As...' download to user device")
     print("   ✅ Works cross-platform")
     app.run(host='0.0.0.0', port=port, debug=False)
-else:
-    # This allows gunicorn to find the app
-    app = app
