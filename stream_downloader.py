@@ -6,7 +6,7 @@ import time
 from urllib.parse import quote
 import json
 import os
-import yt_dlp # Moved import to the top since installation is handled by requirements.txt
+import yt_dlp # Imported at the top since installation is now handled by requirements.txt
 
 app = Flask(__name__)
 
@@ -166,6 +166,7 @@ HTML_TEMPLATE = '''
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🚀 កម្មវិធីទាញយកស្ទ្រីមផ្ទាល់</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Khmer+OS+Battambang:wght@400;600;700&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             font-family: 'Khmer OS Battambang', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; /* Added Khmer font */
