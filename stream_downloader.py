@@ -38,6 +38,13 @@ class StreamDownloader:
     def get_video_info(self, url):
         """Get video information using yt-dlp Python module"""
         try:
+            # Check for Facebook and provide helpful message
+            if self.is_facebook_url(url):
+                return {
+                    'success': False, 
+                    'error': 'Facebook videos are not supported due to platform restrictions. Please try YouTube, Instagram, or TikTok videos instead.'
+                }
+            
             import yt_dlp
             
             with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
@@ -58,7 +65,14 @@ class StreamDownloader:
                         return {'success': False, 'error': 'No video information found'}
                         
                 except yt_dlp.DownloadError as e:
-                    return {'success': False, 'error': f'Video not available: {str(e)}'}
+                    error_msg = str(e)
+                    if 'No video formats found' in error_msg:
+                        platform = self.get_platform_name(url)
+                        return {'success': False, 'error': f'{platform} video is not accessible. Try a different video.'}
+                    elif 'Private video' in error_msg or 'Sign in' in error_msg:
+                        return {'success': False, 'error': 'This video is private or requires login.'}
+                    else:
+                        return {'success': False, 'error': f'Video not available: {error_msg}'}
                 except Exception as e:
                     return {'success': False, 'error': f'Error extracting info: {str(e)}'}
                     
@@ -66,6 +80,24 @@ class StreamDownloader:
             return {'success': False, 'error': 'yt-dlp not available'}
         except Exception as e:
             return {'success': False, 'error': f'Unexpected error: {str(e)}'}
+    
+    def is_facebook_url(self, url):
+        """Check if URL is from Facebook"""
+        return 'facebook.com' in url.lower() or 'fb.watch' in url.lower()
+    
+    def get_platform_name(self, url):
+        """Get platform name for error messages"""
+        url_lower = url.lower()
+        if 'youtube.com' in url_lower or 'youtu.be' in url_lower:
+            return 'YouTube'
+        elif 'instagram.com' in url_lower:
+            return 'Instagram'
+        elif 'tiktok.com' in url_lower:
+            return 'TikTok'
+        elif 'facebook.com' in url_lower or 'fb.watch' in url_lower:
+            return 'Facebook'
+        else:
+            return 'This platform'
     
     def format_duration(self, seconds):
         """Convert duration in seconds to readable format"""
@@ -84,6 +116,13 @@ class StreamDownloader:
     def get_direct_stream_url(self, url, quality='best'):
         """Get direct stream URL using yt-dlp Python module"""
         try:
+            # Check for Facebook and provide helpful message
+            if self.is_facebook_url(url):
+                return {
+                    'success': False, 
+                    'error': 'Facebook videos are not supported due to platform restrictions. Please try YouTube, Instagram, or TikTok videos instead.'
+                }
+            
             import yt_dlp
             
             # Format selection based on quality
@@ -122,7 +161,14 @@ class StreamDownloader:
                         return {'success': False, 'error': 'No stream URL available'}
                         
                 except yt_dlp.DownloadError as e:
-                    return {'success': False, 'error': f'Cannot access video: {str(e)}'}
+                    error_msg = str(e)
+                    if 'No video formats found' in error_msg:
+                        platform = self.get_platform_name(url)
+                        return {'success': False, 'error': f'{platform} video cannot be downloaded.'}
+                    elif 'Private video' in error_msg or 'Sign in' in error_msg:
+                        return {'success': False, 'error': 'Private video - cannot access.'}
+                    else:
+                        return {'success': False, 'error': f'Cannot access video: {error_msg}'}
                 except Exception as e:
                     return {'success': False, 'error': f'Error getting stream: {str(e)}'}
                     
@@ -186,7 +232,7 @@ HTML_TEMPLATE = '''
         .youtube { background: #FF0000; color: white; }
         .instagram { background: #E4405F; color: white; }
         .tiktok { background: #000000; color: white; }
-        .facebook { background: #1877F2; color: white; }
+        .facebook { background: #1877F2; color: white; opacity: 0.6; }
         
         .input-section {
             margin-bottom: 25px;
@@ -344,6 +390,12 @@ HTML_TEMPLATE = '''
             font-size: 0.9em;
         }
         
+        .platform-status {
+            display: inline-block;
+            margin-left: 5px;
+            font-size: 0.8em;
+        }
+        
         @media (max-width: 768px) {
             .options {
                 grid-template-columns: 1fr;
@@ -364,16 +416,19 @@ HTML_TEMPLATE = '''
             <p>Download videos directly to your device - No server storage used!</p>
             
             <div class="platforms">
-                <div class="platform-tag youtube">YouTube</div>
-                <div class="platform-tag instagram">Instagram</div>
-                <div class="platform-tag tiktok">TikTok</div>
-                <div class="platform-tag facebook">Facebook</div>
+                <div class="platform-tag youtube">YouTube <span class="platform-status">✅</span></div>
+                <div class="platform-tag instagram">Instagram <span class="platform-status">✅</span></div>
+                <div class="platform-tag tiktok">TikTok <span class="platform-status">✅</span></div>
+                <div class="platform-tag facebook">Facebook <span class="platform-status">❌</span></div>
             </div>
         </div>
 
         <div class="feature-list">
             <ul>
-                <li>Supports YouTube, Facebook, TikTok, Instagram</li>
+                <li>✅ YouTube - Full Support</li>
+                <li>✅ Instagram - Public Posts & Reels</li>
+                <li>✅ TikTok - Public Videos</li>
+                <li>❌ Facebook - Not Supported (Platform Restrictions)</li>
                 <li>No file saving on server — direct stream</li>
                 <li>Render-compatible (Free Tier)</li>
                 <li>Uses only free-tier services</li>
@@ -384,8 +439,8 @@ HTML_TEMPLATE = '''
 
         <div class="input-section">
             <input type="url" class="url-input" id="videoUrl" 
-                   placeholder="Paste video URL here (YouTube, Instagram, TikTok, Facebook)..."
-                   value="https://www.youtube.com/watch?v=9bZkp7q19f0">
+                   placeholder="Paste video URL here (YouTube, Instagram, TikTok)..."
+                   value="https://www.youtube.com/watch?v=dQw4w9WgXcQ">
             
             <div class="options">
                 <div class="option-group">
@@ -407,7 +462,7 @@ HTML_TEMPLATE = '''
                         <option value="youtube">YouTube</option>
                         <option value="instagram">Instagram</option>
                         <option value="tiktok">TikTok</option>
-                        <option value="facebook">Facebook</option>
+                        <option value="facebook">Facebook (Not Supported)</option>
                     </select>
                 </div>
             </div>
@@ -484,6 +539,12 @@ HTML_TEMPLATE = '''
                 
                 if (!this.isValidUrl(url)) {
                     this.showResult('Please enter a valid URL', 'error');
+                    return;
+                }
+                
+                // Check for Facebook URLs
+                if (url.includes('facebook.com') || url.includes('fb.watch')) {
+                    this.showResult('❌ Facebook videos are not supported due to platform restrictions. Please try YouTube, Instagram, or TikTok videos instead.', 'error');
                     return;
                 }
                 
@@ -774,7 +835,8 @@ if __name__ == '__main__':
     print("🚀 Direct Stream Downloader Started!")
     print(f"📍 Open: http://localhost:{port}")
     print("🎯 Features:")
-    print("   ✅ Supports: YouTube, Facebook, TikTok, Instagram") 
+    print("   ✅ Supports: YouTube, Instagram, TikTok")
+    print("   ❌ Facebook: Not Supported (Platform Restrictions)")
     print("   ✅ No file saving on server — direct stream")
     print("   ✅ Render-compatible (Free Tier)")
     print("   ✅ Uses only free-tier services")
