@@ -744,3 +744,6 @@ if __name__ == '__main__':
     print("   ✅ Auto 'Save As...' download to user device")
     print("   ✅ Works cross-platform")
     app.run(host='0.0.0.0', port=port, debug=False)
+else:
+    # This allows gunicorn to find the app
+    app = app
