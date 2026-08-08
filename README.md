@@ -1,210 +1,52 @@
-# 📥 Modern Video Downloader
+# 🚀 Modern Video Downloader (Web Edition)
 
-A modern, cross-platform GUI application for downloading videos from YouTube, Facebook, TikTok, and Instagram. Built with Python and Tkinter, featuring an Apple-inspired design with colorful, intuitive controls.
+កម្មវិធីទាញយកវីដេអូទំនើបដែលបង្កើតឡើងដោយប្រើ Python Flask និង yt-dlp។ វាអនុញ្ញាតឱ្យអ្នកទាញយកវីដេអូពី YouTube, Instagram, និង TikTok ដោយផ្ទាល់តាមរយៈកម្មវិធីរុករក (Browser) របស់អ្នក។
 
-![Modern UI](https://img.shields.io/badge/UI-Modern-blue?style=flat-square)
-![Python](https://img.shields.io/badge/Python-3.8%2B-green?style=flat-square)
-![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey?style=flat-square)
+## ✨ លក្ខណៈពិសេស (Features)
 
-## ✨ Features
+- **UI ទំនើប**: រចនាឡើងយ៉ាងស្អាត ងាយស្រួលប្រើ និងមានភាសាខ្មែរ។
+- **គាំទ្រច្រើនវេទិកា**: YouTube, Instagram (Reels & Posts), និង TikTok។
+- **គុណភាពចម្រុះ**: អាចជ្រើសរើសគុណភាពចាប់ពី 360p ដល់ 1080p ឬទាញយកតែសំឡេង។
+- **ស្ទ្រីមផ្ទាល់**: មិនមានការរក្សាទុកឯកសារនៅលើម៉ាស៊ីនមេ (Server) ទេ — វីដេអូត្រូវបានបញ្ជូនដោយផ្ទាល់ទៅឧបករណ៍របស់អ្នក។
+- **សុវត្ថិភាព**: បន្ថែមការការពារ SSRF និងការគ្រប់គ្រងកំហុសបានល្អប្រសើរ។
 
-### 🎨 Modern User Interface
-- **Apple-inspired design** with clean, minimalist aesthetics
-- **Two-column layout** for intuitive workflow
-- **Colorful buttons** with hover effects
-- **Responsive design** that scales beautifully
+## 🚀 របៀបដំឡើង និងដំណើរការ (Quick Start)
 
-### 📥 Download Capabilities
-- **Multi-platform support**: YouTube, Facebook, TikTok, Instagram
-- **Batch downloading**: Process multiple URLs simultaneously
-- **Video ID filenames**: Automatic naming using video IDs
-- **Best quality**: Downloads highest available quality
-
-### 🎯 Smart Controls
-- **One-click operations**: Clear, paste, browse with colorful buttons
-- **Real-time progress**: Live progress bar and status updates
-- **Download counters**: Track total, success, and failed downloads
-- **Comprehensive logging**: Detailed log with emoji indicators
-
-### 🔧 Technical Features
-- **Cross-platform**: Works on Windows, Linux, and macOS
-- **Threaded downloads**: Non-blocking UI during downloads
-- **Auto-folder opening**: Automatically opens download folder when complete
-- **Error handling**: Robust error handling with user-friendly messages
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Python 3.8 or higher
-- yt-dlp executable
-
-### Installation
-
-1. **Clone or download the project**
-   ```bash
-   git clone <repository-url>
-   cd video-downloader
-   ```
-
-2. **Install yt-dlp**
-   ```bash
-   # Linux/macOS
-   sudo curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
-   sudo chmod a+rx /usr/local/bin/yt-dlp
-   
-   # Windows
-   # Download yt-dlp.exe from https://github.com/yt-dlp/yt-dlp/releases
-   # Place it in the same folder as the script or add to PATH
-   ```
-
-3. **Run the application**
-   ```bash
-   python3 video_downloader.py
-   ```
-
-## 📖 How to Use
-
-### Step-by-Step Guide
-
-1. **Launch the Application**
-   - Run `python3 video_downloader.py`
-   - Check that yt-dlp status shows "✅ Ready"
-
-2. **Add Video URLs**
-   - Click **"📋 Paste Links"** (Blue button) to paste from clipboard
-   - Or manually type URLs (one per line)
-   - URL counter updates automatically
-
-3. **Set Download Location**
-   - Default: Your system's Downloads folder
-   - Click **"Browse"** (Green button) to choose custom location
-
-4. **Start Download**
-   - Click **"🚀 Download All Videos"** (Purple button)
-   - Monitor progress in real-time
-
-5. **Monitor Progress**
-   - Watch the progress bar advance
-   - Check counters: Total, Success, Failed
-   - Read detailed log messages
-
-6. **Completion**
-   - Success message appears when done
-   - Download folder opens automatically
-   - Check log for any issues
-
-### Button Reference
-
-| Button | Color | Purpose | Usage |
-|--------|-------|---------|-------|
-| 🗑️ Clear Links | Red | Remove all URLs | Start fresh or correct mistakes |
-| 📋 Paste Links | Blue | Paste from clipboard | Quick URL input |
-| 📁 Browse | Green | Choose folder | Custom download location |
-| 🚀 Download All | Purple | Start download | Begin downloading all videos |
-| ⏹️ Stop | Orange | Stop download | Cancel current operation |
-
-## 🛠️ Technical Details
-
-### Supported Platforms
-- **YouTube**: `youtube.com`, `youtu.be` URLs
-- **Facebook**: Video post URLs
-- **TikTok**: Video page URLs
-- **Instagram**: Post and reel URLs
-
-### File Naming
-- Uses video ID for filenames (e.g., `abc123.mp4`, `fb_xyz789.mp4`)
-- Prevents duplicate filenames
-- Maintains file extension based on format
-
-### System Requirements
-- **Python**: 3.8 or higher
-- **Dependencies**: tkinter (usually included with Python)
-- **Storage**: Enough space for downloaded videos
-- **Network**: Internet connection for downloads
-
-## 🔍 Troubleshooting
-
-### Common Issues
-
-**"yt-dlp not found" error**
+### ១. ទាញយកកូដ (Clone Repository)
 ```bash
-# Reinstall yt-dlp
-sudo curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
-sudo chmod a+rx /usr/local/bin/yt-dlp
+git clone https://github.com/cubesabaycode/stream-downloader.git
+cd stream-downloader
 ```
 
-**App won't start**
+### ២. ដំឡើងបណ្ណាល័យដែលត្រូវការ (Install Dependencies)
 ```bash
-# Install tkinter if missing (Ubuntu/Debian)
-sudo apt update
-sudo apt install python3-tk
+pip install -r requirements.txt
 ```
 
-**Download fails for specific videos**
-- Check URL validity and accessibility
-- Verify video isn't private or region-restricted
-- Check log for specific error messages
-
-**Permission errors**
+### ៣. ដំណើរការកម្មវិធី (Run Application)
 ```bash
-# Ensure yt-dlp is executable
-chmod +x /usr/local/bin/yt-dlp
+python stream_downloader.py
 ```
+បន្ទាប់មកបើក Browser ហើយចូលទៅកាន់ `http://localhost:5000`។
 
-### Log Messages Guide
+## 🛠️ បច្ចេកវិទ្យាដែលប្រើប្រាស់ (Tech Stack)
 
-- ✅ **Success**: Video downloaded successfully
-- ❌ **Failed**: Download failed (check error message)
-- 📥 **Downloading**: Currently downloading
-- 🗑️ **Cleared**: URLs cleared from input
-- 📋 **Pasted**: URLs pasted from clipboard
-- 📁 **Folder set**: Download location changed
-- 🛑 **Stopped**: Download stopped by user
-- 📂 **Folder opened**: Download folder opened automatically
+- **Backend**: Python, Flask
+- **Core Engine**: yt-dlp
+- **Frontend**: HTML5, CSS3 (Modern UI), JavaScript (Vanilla)
+- **Deployment**: អាចដាក់ឱ្យដំណើរការលើ Render, Heroku ឬ VPS ផ្សេងៗ។
 
-## 🎨 UI Overview
+## 📝 ការកែសម្រួលថ្មីៗ (Recent Improvements)
 
-### Left Panel - Configuration
-- **URL Input**: Large text area for video URLs
-- **Action Buttons**: Clear, paste, and folder selection
-- **Download Location**: Current save folder path
+- **Refactored Structure**: បំបែក HTML ចេញពីកូដ Python ទៅកាន់ `templates/`។
+- **Enhanced UI**: រចនា UI ថ្មីឱ្យកាន់តែមានភាពទាក់ទាញ និងងាយស្រួលប្រើលើទូរស័ព្ទ។
+- **Security Fix**: បន្ថែមការត្រួតពិនិត្យសុវត្ថិភាពលើ URL ដើម្បីការពារការវាយប្រហារ SSRF។
+- **Khmer Localization**: កែសម្រួលសារជូនដំណឹង និងចំណុចប្រទាក់ជាភាសាខ្មែរឱ្យបានត្រឹមត្រូវ។
 
-### Right Panel - Monitoring
-- **Progress Tracking**: Real-time progress bar and status
-- **Counters**: Large, colorful counters for tracking
-- **Control Buttons**: Download and stop operations
-- **Activity Log**: Detailed download history with timestamps
+## 🤝 ការចូលរួម (Contributing)
 
-## 🤝 Contributing
+យើងស្វាគមន៍រាល់ការចូលរួមចំណែក! ប្រសិនបើអ្នកមានបញ្ហា ឬចង់បន្ថែមមុខងារថ្មីៗ សូមបង្កើត Issue ឬ Pull Request។
 
-We welcome contributions! Please feel free to submit issues, feature requests, or pull requests.
+## 📄 អាជ្ញាប័ណ្ណ (License)
 
-### Development Setup
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
-## 🙏 Acknowledgments
-
-- **yt-dlp**: For the excellent video downloading backend
-- **Python & Tkinter**: For the robust GUI framework
-- **Apple Design**: Inspiration for the modern UI aesthetics
-
-## 📞 Support
-
-If you encounter any issues or have questions:
-
-1. Check the troubleshooting section above
-2. Review the log messages for specific errors
-3. Ensure yt-dlp is properly installed and accessible
-4. Verify URLs are from supported platforms
-
----
-
-**Happy Downloading!** 🎉
+គម្រោងនេះស្ថិតនៅក្រោមអាជ្ញាប័ណ្ណ [MIT License](LICENSE)។
